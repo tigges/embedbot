@@ -208,6 +208,33 @@
     .connect-status.disconnected { background: #fef2f2; color: #991b1b; }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
+    /* ── Client pill ── */
+    .client-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent-dim); color: var(--accent);
+      padding: 8px 14px; border-radius: 8px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      border: 1.5px solid transparent; transition: border-color .15s;
+      max-width: 200px;
+    }
+    .client-pill:hover { border-color: var(--accent); }
+    .client-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .sidebar-divider { height: 1px; background: var(--border); margin: 8px 20px; }
+
+    .client-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+      cursor: pointer; transition: border-color .12s;
+    }
+    .client-row:hover { border-color: var(--accent); }
+    .client-row.active { border-color: var(--accent); background: var(--accent-dim); }
+    .client-row-name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+    .client-row-badge { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .client-row-demo { font-size: 0.75rem; color: var(--muted); text-decoration: none; padding: 2px 6px; }
+    .client-row-demo:hover { color: var(--accent); }
+
     /* ── Appearance preview ── */
     .accent-demo {
       margin-top: 16px;
@@ -241,6 +268,10 @@
     <div class="sidebar-logo">
       🤖 Embedbot <span class="dot">Admin</span>
     </div>
+    <button class="nav-item" data-section="clients">
+      <span class="nav-icon">🏢</span> Clients
+    </button>
+    <div class="sidebar-divider"></div>
     <button class="nav-item active" data-section="business">
       <span class="nav-icon">🏪</span> Business Info
     </button>
@@ -269,6 +300,11 @@
         <p id="page-desc">Basic information shown in the chat widget header.</p>
       </div>
       <div class="save-row">
+        <div class="client-pill" onclick="navigateTo('clients')" title="Switch client">
+          <span>🏪</span>
+          <span class="client-name" id="client-label">No client</span>
+          <span>▾</span>
+        </div>
         <div id="connect-pill" class="connect-status disconnected" style="cursor:pointer" onclick="showGhModal()">
           <span class="status-dot"></span>
           <span id="connect-label">Not connected</span>
@@ -277,6 +313,21 @@
         <button class="btn btn-primary" id="save-btn" onclick="saveConfig()">
           💾 Save to GitHub
         </button>
+      </div>
+    </div>
+
+    <!-- Clients -->
+    <div class="section" id="section-clients">
+      <div class="card">
+        <h2>All clients</h2>
+        <p class="card-desc">Each client has their own bot configuration, demo page, and embed snippet. Click a client to edit it.</p>
+        <div id="clients-list" style="margin-bottom:12px"></div>
+        <button class="btn-add-item" onclick="addNewClient()">+ Add new client</button>
+      </div>
+      <div class="card">
+        <h2>Delete current client</h2>
+        <p class="card-desc">Permanently removes the client's config file and entry from the registry. This cannot be undone.</p>
+        <button class="btn btn-danger" onclick="deleteCurrentClient()">🗑 Delete <span id="delete-client-name">current client</span></button>
       </div>
     </div>
 
@@ -421,13 +472,17 @@
 <script>
   // ── State ─────────────────────────────────────────────────────────────────
 
-  let config = {};
+  let config  = {};
+  let clients = [];          // [{id, name}, …]
+  let currentClientId = null;
 
-  const GH_KEY_REPO  = 'eb_admin_repo';
-  const GH_KEY_TOKEN = 'eb_admin_token';
+  const GH_KEY_REPO    = 'eb_admin_repo';
+  const GH_KEY_TOKEN   = 'eb_admin_token';
+  const GH_KEY_CLIENT  = 'eb_current_client';
 
   const nav = {
-    'business':   { title: 'Business Info',   desc: 'Basic information shown in the chat widget header.' },
+    'clients':    { title: 'Clients',          desc: 'Manage all your chatbot clients in one place.' },
+    'business':   { title: 'Business Info',    desc: 'Basic information shown in the chat widget header.' },
     'services':   { title: 'Services',         desc: 'What your salon offers — appears as quick-reply chips.' },
     'stylists':   { title: 'Stylists',         desc: 'Your team — customers pick a preference during booking.' },
     'appearance': { title: 'Appearance',       desc: 'Brand colour used throughout the widget.' },
@@ -435,23 +490,63 @@
     'connect':    { title: 'GitHub Connect',   desc: 'Save changes directly to your repo.' },
   };
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function slugify(name) {
+    return name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function configPath(id) {
+    return id ? `clients/${id}/config.json` : 'config.json';
+  }
+
+  function getDemoUrl(id) {
+    const repo = localStorage.getItem(GH_KEY_REPO) || '';
+    if (!repo) return '#';
+    const [owner, repoName] = repo.split('/');
+    const base = `https://${owner}.github.io/${repoName || 'embedbot'}`;
+    return id ? `${base}/demo?client=${id}` : `${base}/`;
+  }
+
   // ── Boot ──────────────────────────────────────────────────────────────────
 
   async function boot() {
+    await loadClientsFromFile();
+
+    // Restore previously selected client
+    const savedId = localStorage.getItem(GH_KEY_CLIENT);
+    if (clients.length > 0) {
+      const id = clients.find(c => c.id === savedId) ? savedId : clients[0].id;
+      currentClientId = id;
+      localStorage.setItem(GH_KEY_CLIENT, id);
+    }
+
     await loadConfigFromFile();
     renderAll();
     updateConnectUI();
+    updateClientUI();
     updateSnippet();
   }
 
-  async function loadConfigFromFile() {
+  async function loadClientsFromFile() {
     try {
-      const res = await fetch('./config.json?_=' + Date.now());
+      const res = await fetch('./clients.json?_=' + Date.now());
+      if (res.ok) clients = await res.json();
+      else clients = [];
+    } catch (_) { clients = []; }
+  }
+
+  async function loadConfigFromFile() {
+    const path = './' + configPath(currentClientId);
+    try {
+      const res = await fetch(path + '?_=' + Date.now());
       if (res.ok) config = await res.json();
-    } catch (_) {
-      config = {};
-    }
-    // Ensure required arrays exist
+      else config = {};
+    } catch (_) { config = {}; }
+    applyConfigDefaults();
+  }
+
+  function applyConfigDefaults() {
     if (!config.services) config.services = [];
     if (!config.prices)   config.prices   = {};
     if (!config.stylists) config.stylists  = [];
@@ -616,20 +711,147 @@
     }
   });
 
+  // ── Client management ─────────────────────────────────────────────────────
+
+  async function switchToClient(id) {
+    currentClientId = id;
+    localStorage.setItem(GH_KEY_CLIENT, id);
+
+    const path = './' + configPath(id);
+    try {
+      const res = await fetch(path + '?_=' + Date.now());
+      if (res.ok) config = await res.json();
+      else config = {};
+    } catch (_) { config = {}; }
+    applyConfigDefaults();
+
+    renderAll();
+    updateClientUI();
+    updateSnippet();
+  }
+
+  async function addNewClient() {
+    const name = prompt('New client / business name:');
+    if (!name || !name.trim()) return;
+
+    const token = localStorage.getItem(GH_KEY_TOKEN);
+    const repo  = localStorage.getItem(GH_KEY_REPO);
+    if (!token || !repo) { showGhModal(); return; }
+
+    const id = slugify(name.trim());
+    if (!id) { toast('Invalid name — use letters and numbers.', 'error'); return; }
+    if (clients.find(c => c.id === id)) { toast('A client with that name already exists.', 'error'); return; }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true; btn.textContent = '⏳ Creating…';
+
+    try {
+      const defaultConfig = {
+        salon: name.trim(), accent: '#8b5cf6', hours: '', address: '',
+        services: ['Haircut', 'Colour', 'Treatment'],
+        prices: {}, stylists: ['No preference'], webhook: ''
+      };
+      await pushFileToGitHub(token, repo, `clients/${id}/config.json`, defaultConfig);
+      clients.push({ id, name: name.trim() });
+      await pushFileToGitHub(token, repo, 'clients.json', clients);
+
+      config = defaultConfig;
+      currentClientId = id;
+      localStorage.setItem(GH_KEY_CLIENT, id);
+      renderAll();
+      updateClientUI();
+      updateSnippet();
+      toast('✅ Created: ' + name.trim(), 'success');
+    } catch (err) {
+      toast('❌ ' + err.message, 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = '💾 Save to GitHub';
+    }
+  }
+
+  async function deleteCurrentClient() {
+    if (!currentClientId) return;
+    const client = clients.find(c => c.id === currentClientId);
+    if (!client) return;
+    if (!confirm(`Delete "${client.name}"? This removes the config file and cannot be undone.`)) return;
+
+    const token = localStorage.getItem(GH_KEY_TOKEN);
+    const repo  = localStorage.getItem(GH_KEY_REPO);
+    if (!token || !repo) { showGhModal(); return; }
+
+    try {
+      await deleteFileFromGitHub(token, repo, `clients/${currentClientId}/config.json`);
+      clients = clients.filter(c => c.id !== currentClientId);
+      await pushFileToGitHub(token, repo, 'clients.json', clients);
+
+      if (clients.length > 0) {
+        await switchToClient(clients[0].id);
+      } else {
+        currentClientId = null;
+        localStorage.removeItem(GH_KEY_CLIENT);
+        config = {};
+        applyConfigDefaults();
+        renderAll();
+        updateClientUI();
+        updateSnippet();
+      }
+      toast('Client deleted.', '');
+    } catch (err) {
+      toast('❌ ' + err.message, 'error');
+    }
+  }
+
+  function renderClientsList() {
+    const el = document.getElementById('clients-list');
+    if (!el) return;
+
+    if (clients.length === 0) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:0.875rem;padding:8px 0">No clients yet. Add one to get started.</p>';
+      return;
+    }
+
+    el.innerHTML = clients.map(c => {
+      const isActive = c.id === currentClientId;
+      const demoUrl = getDemoUrl(c.id);
+      return `<div class="client-row${isActive ? ' active' : ''}" onclick="switchToClient('${esc(c.id)}'); navigateTo('business');">
+        <span>🏪</span>
+        <span class="client-row-name">${esc(c.name)}</span>
+        ${isActive ? '<span class="client-row-badge">Editing</span>' : ''}
+        <a class="client-row-demo" href="${esc(demoUrl)}" target="_blank" onclick="event.stopPropagation()" title="Open demo">↗ demo</a>
+      </div>`;
+    }).join('');
+  }
+
+  function updateClientUI() {
+    const client = clients.find(c => c.id === currentClientId);
+    const label = document.getElementById('client-label');
+    if (label) label.textContent = client ? client.name : 'No client';
+    const delName = document.getElementById('delete-client-name');
+    if (delName) delName.textContent = client ? '"' + client.name + '"' : 'current client';
+    renderClientsList();
+  }
+
   // ── Navigation ────────────────────────────────────────────────────────────
 
+  function navigateTo(section) {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const btn = document.querySelector(`.nav-item[data-section="${section}"]`);
+    if (btn) btn.classList.add('active');
+    const sec = document.getElementById('section-' + section);
+    if (sec) sec.classList.add('active');
+    const n = nav[section];
+    if (n) {
+      document.getElementById('page-title').textContent = n.title;
+      document.getElementById('page-desc').textContent  = n.desc;
+    }
+    if (section === 'clients')  renderClientsList();
+    if (section === 'advanced') updateSnippet();
+    if (section === 'connect')  renderConnectSection();
+  }
+
   document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const section = btn.dataset.section;
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('section-' + section).classList.add('active');
-      document.getElementById('page-title').textContent = nav[section].title;
-      document.getElementById('page-desc').textContent  = nav[section].desc;
-      if (section === 'advanced') updateSnippet();
-      if (section === 'connect')  renderConnectSection();
-    });
+    btn.addEventListener('click', () => navigateTo(btn.dataset.section));
   });
 
   // ── Snippet ────────────────────────────────────────────────────────────────
@@ -637,8 +859,9 @@
   function updateSnippet() {
     const repo = localStorage.getItem(GH_KEY_REPO) || 'YOUR-USERNAME/embedbot';
     const [owner, repoName] = repo.split('/');
-    const url = `https://${owner}.github.io/${repoName || 'embedbot'}`;
-    const snippet = `<script\n  src="${url}/dist/embedbot.js"\n  data-config="${url}/config.json">\n<\/script>`;
+    const base = `https://${owner}.github.io/${repoName || 'embedbot'}`;
+    const cfgPath = configPath(currentClientId);
+    const snippet = `<script\n  src="${base}/dist/embedbot.js"\n  data-config="${base}/${cfgPath}">\n<\/script>`;
     const el = document.getElementById('snippet-output');
     if (el) el.textContent = snippet;
   }
@@ -655,18 +878,14 @@
 
     const token = localStorage.getItem(GH_KEY_TOKEN);
     const repo  = localStorage.getItem(GH_KEY_REPO);
-
-    if (!token || !repo) {
-      showGhModal();
-      return;
-    }
+    if (!token || !repo) { showGhModal(); return; }
 
     const btn = document.getElementById('save-btn');
     btn.disabled = true;
     btn.textContent = '⏳ Saving…';
 
     try {
-      await pushToGitHub(token, repo, config);
+      await pushFileToGitHub(token, repo, configPath(currentClientId), config);
       toast('✅ Saved! Deploying — live in ~1 min.', 'success');
     } catch (err) {
       toast('❌ ' + err.message, 'error');
@@ -676,37 +895,50 @@
     }
   }
 
-  async function pushToGitHub(token, repo, cfg) {
+  // Generic GitHub file writer — works for any path in the repo.
+  async function pushFileToGitHub(token, repo, path, data) {
     const headers = {
       'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json',
     };
 
-    const getUrl = `https://api.github.com/repos/${repo}/contents/config.json`;
-    const getRes = await fetch(getUrl, { headers });
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    const getRes = await fetch(url, { headers });
 
-    if (getRes.status === 401) throw new Error('Token rejected by GitHub — it may have expired. Reconnect with a fresh token.');
-    if (getRes.status === 403) throw new Error('Token lacks write permission. Open GitHub Connect, disconnect, then recreate your token with Contents → Read and write on this repo.');
+    if (getRes.status === 401) throw new Error('Token rejected — it may have expired. Reconnect with a fresh token.');
+    if (getRes.status === 403) throw new Error('Token lacks write permission. Recreate it with Contents → Read and write.');
     if (!getRes.ok && getRes.status !== 404) throw new Error('GitHub API error ' + getRes.status + '. Check your token and repo name.');
 
     let sha;
-    if (getRes.ok) {
-      const data = await getRes.json();
-      sha = data.sha;
-    }
+    if (getRes.ok) sha = (await getRes.json()).sha;
 
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2))));
-    const body = { message: 'Update embedbot config via admin UI', content };
+    const jsonStr = JSON.stringify(data, null, 2);
+    const content = btoa(unescape(encodeURIComponent(jsonStr)));
+    const body = { message: `Update ${path} via embedbot admin`, content };
     if (sha) body.sha = sha;
 
-    const putRes = await fetch(getUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+    const putRes = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
     if (!putRes.ok) {
-      if (putRes.status === 403) throw new Error('Write permission denied. Your token needs Contents → Read and write. Disconnect and recreate the token.');
-      if (putRes.status === 401) throw new Error('Token expired or invalid. Disconnect and reconnect with a new token.');
+      if (putRes.status === 403) throw new Error('Write permission denied. Token needs Contents → Read and write.');
+      if (putRes.status === 401) throw new Error('Token expired. Disconnect and reconnect with a new token.');
       const err = await putRes.json().catch(() => ({}));
       throw new Error(err.message || 'Save failed (HTTP ' + putRes.status + ').');
     }
+  }
+
+  // Generic GitHub file deleter.
+  async function deleteFileFromGitHub(token, repo, path) {
+    const headers = {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+    };
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    const getRes = await fetch(url, { headers });
+    if (!getRes.ok) return;
+    const { sha } = await getRes.json();
+    await fetch(url, { method: 'DELETE', headers, body: JSON.stringify({ message: `Delete ${path} via embedbot admin`, sha }) });
   }
 
   // ── Download fallback ─────────────────────────────────────────────────────
@@ -717,9 +949,10 @@
     const blob = new Blob([json], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'config.json';
+    a.download = currentClientId ? `${currentClientId}-config.json` : 'config.json';
     a.click();
-    toast('Downloaded config.json — commit it to your repo to go live.', 'success');
+    const dest = currentClientId ? `clients/${currentClientId}/config.json` : 'config.json';
+    toast('Downloaded — commit to ' + dest + ' to go live.', 'success');
   }
 
   // ── GitHub connect modal ──────────────────────────────────────────────────
@@ -774,6 +1007,7 @@
     localStorage.setItem(GH_KEY_TOKEN, token);
     localStorage.setItem(GH_KEY_REPO, repo);
     updateConnectUI();
+    updateClientUI();
     updateSnippet();
     closeGhModal();
     toast('✅ Connected to ' + repo, 'success');
@@ -784,6 +1018,7 @@
     localStorage.removeItem(GH_KEY_TOKEN);
     localStorage.removeItem(GH_KEY_REPO);
     updateConnectUI();
+    updateClientUI();
     updateSnippet();
     closeGhModal();
     renderConnectSection();
@@ -844,12 +1079,12 @@
       ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // Dismiss modal on overlay click
   document.getElementById('gh-modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeGhModal();
   });
 
   boot();
+
 </script>
 </body>
 </html>
