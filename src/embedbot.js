@@ -4,15 +4,18 @@
  * Drop it into ANY website with a single script tag:
  *
  *   <script src="embedbot.js"
+ *           data-config="./config.json"></script>
+ *
+ * Or supply values directly via data-* attributes:
+ *
+ *   <script src="embedbot.js"
  *           data-salon="Shear Elegance"
- *           data-accent="#8b5cf6"></script>
+ *           data-accent="#8b5cf6"
+ *           data-services="Haircut, Colour"
+ *           data-stylists="No preference, Ava"></script>
  *
- * No backend, no API keys, no dependencies. The widget injects its own styles
- * and DOM, then runs a guided appointment-booking conversation that mirrors the
- * questions a real salon receptionist asks.
- *
- * Configuration can be supplied either via data-* attributes on the script tag
- * or a global `window.EmbedBotConfig` object (the latter takes precedence).
+ * data-* attributes override anything in config.json.
+ * window.EmbedBotConfig overrides everything.
  */
 (function () {
   "use strict";
@@ -20,43 +23,58 @@
   if (window.__embedbotLoaded) return;
   window.__embedbotLoaded = true;
 
-  // ---- Configuration --------------------------------------------------------
+  // Capture currentScript synchronously before any async gap.
   const script = document.currentScript;
-  const ds = (script && script.dataset) || {};
 
   function parseList(value, fallback) {
     if (!value) return fallback;
-    return value
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    return value.split(",").map((s) => s.trim()).filter(Boolean);
   }
 
-  const cfg = Object.assign(
-    {
-      salon: ds.salon || "Bella Hair Studio",
-      accent: ds.accent || "#8b5cf6",
-      services: parseList(ds.services, [
-        "Haircut",
-        "Cut & Blow-dry",
-        "Colour",
-        "Highlights",
-        "Balayage",
-        "Treatment",
-      ]),
-      stylists: parseList(ds.stylists, [
-        "No preference",
-        "Ava",
-        "Marco",
-        "Priya",
-      ]),
-      hours: ds.hours || "Mon–Sat, 9am–6pm",
-      // Optional: POST the completed booking as JSON to this URL.
-      webhook: ds.webhook || (window.EmbedBotConfig && window.EmbedBotConfig.webhook) || "",
-    },
-    window.EmbedBotConfig || {}
-  );
+  function buildCfg(remote) {
+    const ds = (script && script.dataset) || {};
+    const base = Object.assign(
+      {
+        salon: "Bella Hair Studio",
+        accent: "#8b5cf6",
+        services: ["Haircut", "Cut & Blow-dry", "Colour", "Highlights", "Balayage", "Treatment"],
+        prices: {},
+        stylists: ["No preference", "Ava", "Marco", "Priya"],
+        hours: "Mon–Sat, 9am–6pm",
+        address: "",
+        webhook: "",
+      },
+      remote || {}
+    );
+    // data-* attributes win over config.json; window.EmbedBotConfig wins over everything.
+    if (ds.salon) base.salon = ds.salon;
+    if (ds.accent) base.accent = ds.accent;
+    if (ds.services) base.services = parseList(ds.services, base.services);
+    if (ds.stylists) base.stylists = parseList(ds.stylists, base.stylists);
+    if (ds.hours) base.hours = ds.hours;
+    if (ds.webhook) base.webhook = ds.webhook;
+    return Object.assign(base, window.EmbedBotConfig || {});
+  }
 
+  async function loadRemoteConfig(url) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+    return {};
+  }
+
+  async function init() {
+    const configUrl = script && script.dataset.config;
+    const remote = configUrl ? await loadRemoteConfig(configUrl) : {};
+    const cfg = buildCfg(remote);
+    bootstrap(cfg);
+  }
+
+  init();
+
+  // ---- Everything below runs inside bootstrap(cfg) -------------------------
+  function bootstrap(cfg) {
   const ACCENT = cfg.accent;
 
   // ---- Styles ---------------------------------------------------------------
@@ -437,4 +455,5 @@
     close: closePanel,
     config: cfg,
   };
+  } // end bootstrap
 })();

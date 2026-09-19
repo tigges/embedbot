@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedbot Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #8b5cf6;
+      --accent-dim: #ede9fe;
+      --text: #1e1b2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --red: #ef4444;
+      --green: #10b981;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 0 20px 20px;
+      font-size: 0.9rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .sidebar-logo .dot { color: var(--accent); }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; font-size: 0.875rem; font-weight: 500;
+      color: var(--muted); cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; border-radius: 0;
+      transition: color .12s, background .12s;
+    }
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+    .nav-item.active { color: var(--accent); background: var(--accent-dim); }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    /* ── Main ── */
+    .main { flex: 1; padding: 40px 48px; max-width: 860px; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .topbar h1 { font-size: 1.4rem; font-weight: 700; }
+    .topbar p { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    .save-row { display: flex; gap: 10px; align-items: center; }
+
+    /* ── Cards / sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 0.95rem; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .card .card-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    input[type="text"], input[type="url"], input[type="color"], input[type="password"], select {
+      width: 100%; padding: 10px 12px; font-size: 0.9rem; font-family: inherit;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--white); color: var(--text); outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]:focus, input[type="url"]:focus, input[type="password"]:focus { border-color: var(--accent); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Color input */
+    .color-wrap {
+      display: flex; align-items: center; gap: 10px;
+    }
+    input[type="color"] {
+      width: 44px; height: 40px; padding: 3px; cursor: pointer; border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .color-hex { flex: 1; }
+    .color-preview {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+    }
+
+    /* ── List editor (services / stylists) ── */
+    .list-editor { display: flex; flex-direction: column; gap: 8px; }
+    .list-item {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px;
+    }
+    .list-item input[type="text"] {
+      border: none; background: transparent; padding: 0;
+      font-size: 0.875rem; flex: 1;
+    }
+    .list-item input[type="text"]:focus { outline: none; }
+    .list-item .price-input {
+      width: 110px; font-size: 0.8rem; color: var(--muted);
+      border: none; background: transparent; padding: 0;
+      text-align: right;
+    }
+    .list-item .price-input:focus { outline: none; }
+    .drag-handle { color: var(--border); cursor: grab; font-size: 1rem; flex-shrink: 0; }
+    .btn-remove {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 1rem; line-height: 1; padding: 2px 4px; border-radius: 4px;
+      flex-shrink: 0; transition: color .12s;
+    }
+    .btn-remove:hover { color: var(--red); }
+
+    .btn-add-item {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: 1.5px dashed var(--border);
+      border-radius: 8px; padding: 9px 14px;
+      font-size: 0.85rem; color: var(--muted); cursor: pointer; width: 100%;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-add-item:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: #fef2f2; color: var(--red); border: 1.5px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--text); color: #fff;
+      padding: 12px 18px; border-radius: 10px;
+      font-size: 0.875rem; font-weight: 500;
+      display: none; align-items: center; gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 9999;
+      max-width: 320px;
+    }
+    #toast.success { background: var(--green); }
+    #toast.error { background: var(--red); }
+    #toast.show { display: flex; }
+
+    /* ── GitHub connect modal ── */
+    #gh-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 9000;
+      display: none; align-items: center; justify-content: center;
+    }
+    #gh-modal-overlay.show { display: flex; }
+    #gh-modal {
+      background: var(--white); border-radius: 16px;
+      padding: 32px; width: 480px; max-width: calc(100vw - 48px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.2);
+    }
+    #gh-modal h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    #gh-modal p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 20px; }
+    .steps {
+      background: var(--bg); border-radius: 8px; padding: 14px 16px;
+      font-size: 0.82rem; color: var(--muted); line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .steps strong { color: var(--text); }
+    #gh-modal .field { margin-bottom: 14px; }
+    #gh-modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+
+    /* ── Connect status ── */
+    .connect-status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; padding: 8px 14px; border-radius: 8px;
+    }
+    .connect-status.connected { background: #ecfdf5; color: #065f46; }
+    .connect-status.disconnected { background: #fef2f2; color: #991b1b; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+    /* ── Appearance preview ── */
+    .accent-demo {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg); border-radius: 8px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .demo-launcher {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; flex-shrink: 0;
+    }
+    .demo-chip {
+      display: inline-flex; padding: 6px 14px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 500; border: 1.5px solid;
+      margin: 2px;
+    }
+    .demo-send {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      🤖 Embedbot <span class="dot">Admin</span>
+    </div>
+    <button class="nav-item active" data-section="business">
+      <span class="nav-icon">🏪</span> Business Info
+    </button>
+    <button class="nav-item" data-section="services">
+      <span class="nav-icon">✂️</span> Services
+    </button>
+    <button class="nav-item" data-section="stylists">
+      <span class="nav-icon">👩‍🎨</span> Stylists
+    </button>
+    <button class="nav-item" data-section="appearance">
+      <span class="nav-icon">🎨</span> Appearance
+    </button>
+    <button class="nav-item" data-section="advanced">
+      <span class="nav-icon">⚙️</span> Advanced
+    </button>
+    <button class="nav-item" data-section="connect">
+      <span class="nav-icon">🔗</span> GitHub Connect
+    </button>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="page-title">Business Info</h1>
+        <p id="page-desc">Basic information shown in the chat widget header.</p>
+      </div>
+      <div class="save-row">
+        <div id="connect-pill" class="connect-status disconnected" style="cursor:pointer" onclick="showGhModal()">
+          <span class="status-dot"></span>
+          <span id="connect-label">Not connected</span>
+        </div>
+        <button class="btn btn-secondary" onclick="downloadConfig()">⬇ Download</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveConfig()">
+          💾 Save to GitHub
+        </button>
+      </div>
+    </div>
+
+    <!-- Business Info -->
+    <div class="section active" id="section-business">
+      <div class="card">
+        <h2>Salon details</h2>
+        <p class="card-desc">Shown in the chat widget header and confirmation messages.</p>
+        <div class="field">
+          <label>Salon name</label>
+          <input type="text" id="f-salon" placeholder="Bella Hair Studio" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Opening hours</label>
+            <input type="text" id="f-hours" placeholder="Mon–Sat, 9am–6pm" />
+          </div>
+          <div class="field">
+            <label>Address (optional)</label>
+            <input type="text" id="f-address" placeholder="14 Rosewood Lane" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div class="section" id="section-services">
+      <div class="card">
+        <h2>Services</h2>
+        <p class="card-desc">These appear as quick-reply chips in the booking flow. Add a price (shown on the demo page).</p>
+        <div class="list-editor" id="services-list"></div>
+        <button class="btn-add-item" onclick="addService()" style="margin-top:10px">
+          + Add service
+        </button>
+      </div>
+    </div>
+
+    <!-- Stylists -->
+    <div class="section" id="section-stylists">
+      <div class="card">
+        <h2>Stylists</h2>
+        <p class="card-desc">Keep "No preference" as the first option if you want to allow it.</p>
+        <div class="list-editor" id="stylists-list"></div>
+        <button class="btn-add-item" onclick="addStylist()" style="margin-top:10px">
+          + Add stylist
+        </button>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="section" id="section-appearance">
+      <div class="card">
+        <h2>Accent colour</h2>
+        <p class="card-desc">Used for the launcher button, header, chips, and send button.</p>
+        <div class="field">
+          <label>Colour</label>
+          <div class="color-wrap">
+            <input type="color" id="f-color-picker" />
+            <input type="text" id="f-color-hex" class="color-hex" placeholder="#8b5cf6" maxlength="7" />
+          </div>
+        </div>
+        <div class="accent-demo">
+          <div class="demo-launcher" id="demo-launcher">💬</div>
+          <div>
+            <div class="demo-chip" id="demo-chip">Haircut</div>
+            <div class="demo-chip" id="demo-chip2">Colour</div>
+          </div>
+          <div class="demo-send" id="demo-send">➤</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced -->
+    <div class="section" id="section-advanced">
+      <div class="card">
+        <h2>Webhook URL</h2>
+        <p class="card-desc">When a booking is confirmed, embedbot will POST the booking details as JSON to this URL. Leave blank to disable. Works with Zapier, Make, n8n, and any HTTP endpoint.</p>
+        <div class="field">
+          <label>Webhook URL</label>
+          <input type="url" id="f-webhook" placeholder="https://hooks.zapier.com/..." />
+        </div>
+      </div>
+      <div class="card">
+        <h2>Export snippet</h2>
+        <p class="card-desc">Copy this into any website to embed the widget. The widget will load settings from <code>config.json</code> automatically.</p>
+        <pre id="snippet-output" style="background:#f3f0ff;border-radius:8px;padding:16px;font-size:0.8rem;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;"></pre>
+        <button class="btn btn-secondary" style="margin-top:12px" onclick="copySnippet()">📋 Copy snippet</button>
+      </div>
+    </div>
+
+    <!-- GitHub Connect -->
+    <div class="section" id="section-connect">
+      <div class="card">
+        <h2>GitHub connection</h2>
+        <p class="card-desc">Connect once to save changes directly to your GitHub repository. This triggers a deploy and the live site updates in about 1 minute — no manual commits needed.</p>
+        <div id="connect-detail">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <div class="card">
+        <h2>How it works</h2>
+        <p class="card-desc" style="margin-bottom:0">The admin panel writes <code>config.json</code> to your repo via the GitHub API using a Personal Access Token (PAT). The token is stored <strong>only in your browser</strong> (localStorage) — it never leaves your device. Anyone can see the admin UI, but they cannot save without a valid token.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div id="toast"></div>
+
+<!-- ── GitHub connect modal ── -->
+<div id="gh-modal-overlay">
+  <div id="gh-modal">
+    <h2>🔗 Connect to GitHub</h2>
+    <p>Enter your repository details and a Personal Access Token. This lets the admin panel save changes directly without manual commits.</p>
+    <div class="steps">
+      <strong>To create a token:</strong><br>
+      1. Go to <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained</strong><br>
+      2. Select your <strong>embedbot repository</strong><br>
+      3. Under <em>Repository permissions</em>, set <strong>Contents → Read and write</strong><br>
+      4. Click <strong>Generate token</strong> and paste it below
+    </div>
+    <div class="field">
+      <label>Repository (owner/repo)</label>
+      <input type="text" id="gh-repo" placeholder="tigges/embedbot" />
+    </div>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input type="password" id="gh-token" placeholder="github_pat_..." />
+    </div>
+    <div id="gh-modal-btns">
+      <button class="btn btn-primary" onclick="connectGitHub()">Connect</button>
+      <button class="btn btn-secondary" onclick="closeGhModal()">Cancel</button>
+      <button class="btn btn-danger" id="btn-disconnect" onclick="disconnectGitHub()" style="margin-left:auto;display:none">Disconnect</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────────────────────
+
+  let config = {};
+
+  const GH_KEY_REPO  = 'eb_admin_repo';
+  const GH_KEY_TOKEN = 'eb_admin_token';
+
+  const nav = {
+    'business':   { title: 'Business Info',   desc: 'Basic information shown in the chat widget header.' },
+    'services':   { title: 'Services',         desc: 'What your salon offers — appears as quick-reply chips.' },
+    'stylists':   { title: 'Stylists',         desc: 'Your team — customers pick a preference during booking.' },
+    'appearance': { title: 'Appearance',       desc: 'Brand colour used throughout the widget.' },
+    'advanced':   { title: 'Advanced',         desc: 'Webhook URL, embed snippet, and other options.' },
+    'connect':    { title: 'GitHub Connect',   desc: 'Save changes directly to your repo.' },
+  };
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+
+  async function boot() {
+    await loadConfigFromFile();
+    renderAll();
+    updateConnectUI();
+    updateSnippet();
+  }
+
+  async function loadConfigFromFile() {
+    try {
+      const res = await fetch('./config.json?_=' + Date.now());
+      if (res.ok) config = await res.json();
+    } catch (_) {
+      config = {};
+    }
+    // Ensure required arrays exist
+    if (!config.services) config.services = [];
+    if (!config.prices)   config.prices   = {};
+    if (!config.stylists) config.stylists  = [];
+    if (!config.salon)    config.salon     = '';
+    if (!config.accent)   config.accent    = '#8b5cf6';
+    if (!config.hours)    config.hours     = '';
+    if (!config.address)  config.address   = '';
+    if (!config.webhook)  config.webhook   = '';
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  function renderAll() {
+    document.getElementById('f-salon').value   = config.salon || '';
+    document.getElementById('f-hours').value   = config.hours || '';
+    document.getElementById('f-address').value = config.address || '';
+    document.getElementById('f-webhook').value = config.webhook || '';
+
+    const accent = config.accent || '#8b5cf6';
+    document.getElementById('f-color-picker').value = accent;
+    document.getElementById('f-color-hex').value    = accent;
+    applyAccentPreview(accent);
+
+    renderServicesList();
+    renderStylistsList();
+    updateSnippet();
+  }
+
+  function renderServicesList() {
+    const el = document.getElementById('services-list');
+    el.innerHTML = '';
+    (config.services || []).forEach((svc, i) => {
+      const row = document.createElement('div');
+      row.className = 'list-item';
+      row.innerHTML = `
+        <span class="drag-handle">⠿</span>
+        <input type="text" value="${esc(svc)}" data-i="${i}" data-field="service"
+          onchange="updateService(${i}, 'name', this.value)" />
+        <input class="price-input" type="text"
+          value="${esc(config.prices[svc] || '')}"
+          placeholder="price (e.g. from £35)"
+          data-i="${i}" data-field="price"
+          onchange="updateService(${i}, 'price', this.value)" />
+        <button class="btn-remove" onclick="removeService(${i})" title="Remove">✕</button>`;
+      el.appendChild(row);
+    });
+  }
+
+  function renderStylistsList() {
+    const el = document.getElementById('stylists-list');
+    el.innerHTML = '';
+    (config.stylists || []).forEach((sty, i) => {
+      const row = document.createElement('div');
+      row.className = 'list-item';
+      row.innerHTML = `
+        <span class="drag-handle">⠿</span>
+        <input type="text" value="${esc(sty)}" data-i="${i}"
+          onchange="updateStylist(${i}, this.value)" />
+        <button class="btn-remove" onclick="removeStylist(${i})" title="Remove">✕</button>`;
+      el.appendChild(row);
+    });
+  }
+
+  // ── Service / stylist CRUD ────────────────────────────────────────────────
+
+  function updateService(i, field, val) {
+    if (field === 'name') {
+      const oldName = config.services[i];
+      const oldPrice = config.prices[oldName] || '';
+      config.services[i] = val;
+      delete config.prices[oldName];
+      if (val) config.prices[val] = oldPrice;
+    } else {
+      const name = config.services[i];
+      if (val) config.prices[name] = val;
+      else     delete config.prices[name];
+    }
+  }
+
+  function addService() {
+    config.services.push('New Service');
+    config.prices['New Service'] = '';
+    renderServicesList();
+  }
+
+  function removeService(i) {
+    const name = config.services.splice(i, 1)[0];
+    delete config.prices[name];
+    renderServicesList();
+  }
+
+  function updateStylist(i, val) { config.stylists[i] = val; }
+
+  function addStylist() {
+    config.stylists.push('New Stylist');
+    renderStylistsList();
+  }
+
+  function removeStylist(i) {
+    config.stylists.splice(i, 1);
+    renderStylistsList();
+  }
+
+  // ── Collect form values → config ──────────────────────────────────────────
+
+  function collectForm() {
+    config.salon   = document.getElementById('f-salon').value.trim();
+    config.hours   = document.getElementById('f-hours').value.trim();
+    config.address = document.getElementById('f-address').value.trim();
+    config.accent  = document.getElementById('f-color-hex').value.trim() || '#8b5cf6';
+    config.webhook = document.getElementById('f-webhook').value.trim();
+    // services/stylists are updated in real-time via onchange handlers
+  }
+
+  // ── Accent colour preview ─────────────────────────────────────────────────
+
+  function applyAccentPreview(color) {
+    const launcher = document.getElementById('demo-launcher');
+    const chip     = document.getElementById('demo-chip');
+    const chip2    = document.getElementById('demo-chip2');
+    const send     = document.getElementById('demo-send');
+    if (launcher) launcher.style.background = color;
+    if (send)     send.style.background     = color;
+    [chip, chip2].forEach(c => {
+      if (c) { c.style.borderColor = color; c.style.color = color; }
+    });
+  }
+
+  document.getElementById('f-color-picker').addEventListener('input', function() {
+    document.getElementById('f-color-hex').value = this.value;
+    applyAccentPreview(this.value);
+  });
+
+  document.getElementById('f-color-hex').addEventListener('input', function() {
+    const val = this.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      document.getElementById('f-color-picker').value = val;
+      applyAccentPreview(val);
+    }
+  });
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.dataset.section;
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('section-' + section).classList.add('active');
+      document.getElementById('page-title').textContent = nav[section].title;
+      document.getElementById('page-desc').textContent  = nav[section].desc;
+      if (section === 'advanced') updateSnippet();
+      if (section === 'connect')  renderConnectSection();
+    });
+  });
+
+  // ── Snippet ────────────────────────────────────────────────────────────────
+
+  function updateSnippet() {
+    const repo = localStorage.getItem(GH_KEY_REPO) || 'YOUR-USERNAME/embedbot';
+    const [owner, repoName] = repo.split('/');
+    const url = `https://${owner}.github.io/${repoName || 'embedbot'}`;
+    const snippet = `<script\n  src="${url}/dist/embedbot.js"\n  data-config="${url}/config.json">\n<\/script>`;
+    const el = document.getElementById('snippet-output');
+    if (el) el.textContent = snippet;
+  }
+
+  function copySnippet() {
+    const text = document.getElementById('snippet-output').textContent;
+    navigator.clipboard.writeText(text).then(() => toast('Snippet copied!', 'success'));
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+
+  async function saveConfig() {
+    collectForm();
+
+    const token = localStorage.getItem(GH_KEY_TOKEN);
+    const repo  = localStorage.getItem(GH_KEY_REPO);
+
+    if (!token || !repo) {
+      showGhModal();
+      return;
+    }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Saving…';
+
+    try {
+      await pushToGitHub(token, repo, config);
+      toast('✅ Saved! Deploying — live in ~1 min.', 'success');
+    } catch (err) {
+      toast('❌ ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '💾 Save to GitHub';
+    }
+  }
+
+  async function pushToGitHub(token, repo, cfg) {
+    const headers = {
+      'Authorization': 'token ' + token,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+    };
+
+    const getUrl = `https://api.github.com/repos/${repo}/contents/config.json`;
+    const getRes = await fetch(getUrl, { headers });
+    if (!getRes.ok && getRes.status !== 404) {
+      throw new Error('GitHub API error ' + getRes.status + '. Check your token and repo.');
+    }
+
+    let sha;
+    if (getRes.ok) {
+      const data = await getRes.json();
+      sha = data.sha;
+    }
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2))));
+    const body = { message: 'Update embedbot config via admin UI', content };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(getUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to save. Check token permissions (needs Contents: Write).');
+    }
+  }
+
+  // ── Download fallback ─────────────────────────────────────────────────────
+
+  function downloadConfig() {
+    collectForm();
+    const json = JSON.stringify(config, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'config.json';
+    a.click();
+    toast('Downloaded config.json — commit it to your repo to go live.', 'success');
+  }
+
+  // ── GitHub connect modal ──────────────────────────────────────────────────
+
+  function showGhModal() {
+    const token = localStorage.getItem(GH_KEY_TOKEN);
+    const repo  = localStorage.getItem(GH_KEY_REPO);
+    if (token) document.getElementById('gh-token').value = '••••••••••••••••';
+    if (repo)  document.getElementById('gh-repo').value  = repo;
+    document.getElementById('btn-disconnect').style.display = token ? 'inline-flex' : 'none';
+    document.getElementById('gh-modal-overlay').classList.add('show');
+  }
+
+  function closeGhModal() {
+    document.getElementById('gh-modal-overlay').classList.remove('show');
+  }
+
+  async function connectGitHub() {
+    const tokenInput = document.getElementById('gh-token').value.trim();
+    const repo  = document.getElementById('gh-repo').value.trim();
+    const token = tokenInput.startsWith('•') ? localStorage.getItem(GH_KEY_TOKEN) : tokenInput;
+
+    if (!token || !repo) {
+      toast('Please fill in both fields.', 'error');
+      return;
+    }
+
+    // Verify token works
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}`, {
+        headers: { 'Authorization': 'token ' + token }
+      });
+      if (!res.ok) throw new Error('Could not access repo. Check repo name and token permissions.');
+    } catch (e) {
+      toast('❌ ' + e.message, 'error');
+      return;
+    }
+
+    localStorage.setItem(GH_KEY_TOKEN, token);
+    localStorage.setItem(GH_KEY_REPO, repo);
+    updateConnectUI();
+    updateSnippet();
+    closeGhModal();
+    toast('✅ Connected to ' + repo, 'success');
+    renderConnectSection();
+  }
+
+  function disconnectGitHub() {
+    localStorage.removeItem(GH_KEY_TOKEN);
+    localStorage.removeItem(GH_KEY_REPO);
+    updateConnectUI();
+    updateSnippet();
+    closeGhModal();
+    renderConnectSection();
+    toast('Disconnected.', '');
+  }
+
+  function updateConnectUI() {
+    const connected = !!localStorage.getItem(GH_KEY_TOKEN);
+    const repo = localStorage.getItem(GH_KEY_REPO) || '';
+    const pill = document.getElementById('connect-pill');
+    const label = document.getElementById('connect-label');
+    pill.className = 'connect-status ' + (connected ? 'connected' : 'disconnected');
+    label.textContent = connected ? repo : 'Not connected';
+  }
+
+  function renderConnectSection() {
+    const connected = !!localStorage.getItem(GH_KEY_TOKEN);
+    const repo = localStorage.getItem(GH_KEY_REPO) || '';
+    const el = document.getElementById('connect-detail');
+    if (connected) {
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#ecfdf5;border-radius:8px;margin-bottom:16px">
+          <span style="font-size:1.5rem">✅</span>
+          <div>
+            <div style="font-weight:600;color:#065f46">Connected to <strong>${esc(repo)}</strong></div>
+            <div style="font-size:0.8rem;color:#047857;margin-top:2px">Saving will commit config.json and trigger a deploy.</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="disconnectGitHub()">Disconnect</button>`;
+    } else {
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fef2f2;border-radius:8px;margin-bottom:16px">
+          <span style="font-size:1.5rem">🔌</span>
+          <div>
+            <div style="font-weight:600;color:#991b1b">Not connected</div>
+            <div style="font-size:0.8rem;color:#b91c1c;margin-top:2px">Connect to enable one-click saving to GitHub.</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="showGhModal()">Connect to GitHub</button>`;
+    }
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+
+  let toastTimer;
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 4000);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function esc(str) {
+    return String(str || '').replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Dismiss modal on overlay click
+  document.getElementById('gh-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeGhModal();
+  });
+
+  boot();
+</script>
+</body>
+</html>
