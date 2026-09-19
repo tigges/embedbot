@@ -1,0 +1,15 @@
+{
+  "name": "embedbot",
+  "version": "1.0.0",
+  "description": "A simple, clean, embeddable hair-salon receptionist chatbot for appointment booking. Drop it into any website with a single script tag.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "build": "esbuild src/embedbot.js --bundle --minify --sourcemap --outfile=dist/embedbot.js --banner:js=\"/* embedbot v1.0.0 | MIT */\"",
+    "dev": "esbuild src/embedbot.js --bundle --outfile=dist/embedbot.js --servedir=. --serve=0.0.0.0:8000",
+    "watch": "esbuild src/embedbot.js --bundle --outfile=dist/embedbot.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.1"
+  }
+}

@@ -3,353 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella Hair Studio — Where great hair begins</title>
-  <meta name="description" content="Expert cuts, rich colour and restorative care from stylists who genuinely listen. Book your chair in under a minute." />
+  <title>Bella Hair Studio — Modern Cuts, Colour & Care</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --accent: #8b5cf6; --ink: #201b2e; --muted: #6b6780; --bg: #faf8ff; }
+    body { font-family: "Inter", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; }
+    h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: -0.5px; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-    :root {
-      --purple: #7c5cfc;
-      --purple-light: #a78bfa;
-      --purple-dark: #5b3fd4;
-      --text: #1a1a2e;
-      --muted: #6b7280;
-      --bg: #fafafa;
-      --white: #ffffff;
-      --border: #e5e7eb;
-    }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+    .logo { font-family: "Fraunces", serif; font-size: 22px; font-weight: 600; }
+    .logo span { color: var(--accent); }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 26px; font-size: 15px; font-weight: 500; }
+    nav a:hover { color: var(--ink); }
 
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
+    .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; padding: 60px 0 80px; }
+    .hero h1 { font-size: 56px; line-height: 1.05; margin-bottom: 20px; }
+    .hero p { font-size: 19px; color: var(--muted); max-width: 460px; margin-bottom: 30px; }
+    .btn { display: inline-block; background: var(--accent); color: #fff; padding: 14px 26px; border-radius: 30px;
+      font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 16px; transition: transform .15s; }
+    .btn:hover { transform: translateY(-2px); }
+    .hero-img { border-radius: 24px; height: 380px; background:
+      linear-gradient(135deg, rgba(139,92,246,.9), rgba(236,72,153,.85)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 20h40M20 0v40' stroke='%23ffffff22' stroke-width='1'/%3E%3C/svg%3E");
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 90px; box-shadow: 0 30px 60px rgba(139,92,246,.3); }
 
-    a { text-decoration: none; color: inherit; }
+    .section { padding: 60px 0; }
+    .section h2 { font-size: 36px; text-align: center; margin-bottom: 12px; }
+    .section .lede { text-align: center; color: var(--muted); max-width: 520px; margin: 0 auto 44px; font-size: 17px; }
 
-    /* ── Nav ── */
-    nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 48px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-    }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .card { background: #fff; border-radius: 18px; padding: 28px; box-shadow: 0 10px 30px rgba(32,27,46,.06); border: 1px solid #f0ecfa; }
+    .card .emoji { font-size: 34px; }
+    .card h3 { font-size: 21px; margin: 14px 0 8px; }
+    .card p { color: var(--muted); font-size: 15px; margin-bottom: 12px; }
+    .card .price { font-weight: 600; color: var(--accent); }
 
-    .nav-logo {
-      font-size: 1rem; font-weight: 700; letter-spacing: -0.02em;
-      color: var(--text);
-    }
-    .nav-logo span { color: var(--purple); }
+    .cta { background: linear-gradient(135deg, #2a2140, #3a2b5c); color: #fff; border-radius: 28px; padding: 56px; text-align: center; margin: 40px 0; }
+    .cta h2 { color: #fff; font-size: 34px; margin-bottom: 12px; }
+    .cta p { color: #d7cff0; margin-bottom: 26px; font-size: 17px; }
+    .cta .btn { background: #fff; color: var(--accent); }
 
-    .nav-links { display: flex; gap: 32px; }
-    .nav-links a {
-      font-size: 0.9rem; font-weight: 500; color: var(--muted);
-      transition: color .15s;
-    }
-    .nav-links a:hover { color: var(--text); }
+    footer { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; border-top: 1px solid #eee7f8; }
 
-    .nav-book {
-      background: var(--purple);
-      color: #fff !important;
-      padding: 9px 20px;
-      border-radius: 8px;
-      font-weight: 600 !important;
-      font-size: 0.875rem !important;
-      transition: background .15s !important;
-    }
-    .nav-book:hover { background: var(--purple-dark) !important; color: #fff !important; }
-
-    /* ── Hero ── */
-    .hero {
-      display: grid; grid-template-columns: 1fr 1fr;
-      align-items: center; gap: 48px;
-      padding: 80px 48px 100px;
-      max-width: 1100px; margin: 0 auto;
-    }
-
-    .hero-text h1 {
-      font-size: clamp(2.2rem, 5vw, 3.2rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 20px;
-    }
-
-    .hero-text p {
-      color: var(--muted); font-size: 1rem; line-height: 1.7;
-      max-width: 380px; margin-bottom: 32px;
-    }
-
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--purple); color: #fff;
-      padding: 14px 28px; border-radius: 10px;
-      font-weight: 700; font-size: 0.95rem;
-      border: none; cursor: pointer;
-      transition: background .15s, transform .1s;
-    }
-    .btn-primary:hover { background: var(--purple-dark); }
-    .btn-primary:active { transform: scale(0.98); }
-
-    /* Hero illustration card */
-    .hero-visual {
-      display: flex; justify-content: center; align-items: center;
-    }
-
-    .hero-card {
-      width: 340px; height: 280px;
-      background: linear-gradient(135deg, #8b5cf6 0%, #6c63ff 50%, #a78bfa 100%);
-      border-radius: 28px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 100px;
-      box-shadow: 0 24px 60px rgba(124, 92, 252, .35);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(circle at 30% 40%, rgba(255,255,255,.15) 0%, transparent 60%);
-    }
-
-    /* ── Services ── */
-    .services {
-      background: var(--white);
-      padding: 80px 48px;
-    }
-
-    .services-inner { max-width: 1100px; margin: 0 auto; }
-
-    .services-header {
-      text-align: center; margin-bottom: 52px;
-    }
-    .services-header h2 {
-      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
-      margin-bottom: 12px;
-    }
-    .services-header p {
-      color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto;
-    }
-
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-
-    .service-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px 24px;
-      transition: box-shadow .2s, transform .2s;
-    }
-    .service-card:hover {
-      box-shadow: 0 8px 32px rgba(0,0,0,.08);
-      transform: translateY(-2px);
-    }
-
-    .service-icon { font-size: 32px; margin-bottom: 16px; }
-    .service-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
-    .service-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.65; }
-
-    /* ── About strip ── */
-    .about {
-      padding: 80px 48px;
-      max-width: 1100px; margin: 0 auto;
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 64px; align-items: center;
-    }
-
-    .about-text h2 {
-      font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em;
-      margin-bottom: 16px;
-    }
-    .about-text p {
-      color: var(--muted); font-size: 0.95rem; line-height: 1.75; margin-bottom: 24px;
-    }
-
-    .about-stats {
-      display: flex; gap: 32px;
-    }
-    .stat-item { text-align: center; }
-    .stat-num { font-size: 2rem; font-weight: 800; color: var(--purple); }
-    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-
-    .about-visual {
-      background: linear-gradient(160deg, #f3f0ff 0%, #ede9fe 100%);
-      border-radius: 24px;
-      height: 300px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 80px;
-    }
-
-    /* ── Book CTA ── */
-    .cta {
-      background: linear-gradient(135deg, var(--purple) 0%, #5b3fd4 100%);
-      padding: 80px 48px;
-      text-align: center; color: #fff;
-    }
-    .cta h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
-    .cta p { font-size: 1rem; opacity: .8; margin-bottom: 32px; }
-    .btn-white {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: #fff; color: var(--purple);
-      padding: 14px 32px; border-radius: 10px;
-      font-weight: 700; font-size: 0.95rem;
-      transition: opacity .15s;
-    }
-    .btn-white:hover { opacity: .92; }
-
-    /* ── Footer ── */
-    footer {
-      padding: 28px 48px;
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 0.82rem; color: var(--muted);
-    }
-    footer a { color: var(--muted); }
-    footer a:hover { color: var(--text); }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      nav { padding: 16px 20px; }
-      .nav-links { gap: 18px; }
-      .hero { grid-template-columns: 1fr; padding: 48px 20px 60px; gap: 32px; }
-      .hero-visual { order: -1; }
-      .hero-card { width: 240px; height: 200px; font-size: 70px; }
-      .services { padding: 48px 20px; }
-      .services-grid { grid-template-columns: 1fr; }
-      .about { grid-template-columns: 1fr; padding: 48px 20px; gap: 32px; }
-      .cta { padding: 60px 20px; }
-      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; padding: 30px 0 50px; }
+      .hero h1 { font-size: 40px; }
+      .hero-img { height: 240px; font-size: 64px; }
+      .cards { grid-template-columns: 1fr; }
+      nav { display: none; }
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div class="logo">Bella<span>.</span>Hair Studio</div>
+      <nav>
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#book" onclick="EmbedBot && EmbedBot.open(); return false;">Book</a>
+      </nav>
+    </header>
 
-<!-- ── Nav ── -->
-<nav>
-  <div class="nav-logo">Bella<span>.</span>Hair Studio</div>
-  <div class="nav-links">
-    <a href="#services">Services</a>
-    <a href="#about">About</a>
-    <a href="#book" class="nav-book">Book</a>
-  </div>
-</nav>
+    <section class="hero">
+      <div>
+        <h1>Where great hair<br />begins.</h1>
+        <p>Expert cuts, rich colour and restorative care from stylists who genuinely listen. Book your chair in under a minute.</p>
+        <button class="btn" onclick="EmbedBot && EmbedBot.open();">Book an appointment</button>
+      </div>
+      <div class="hero-img">💇‍♀️</div>
+    </section>
 
-<!-- ── Hero ── -->
-<section class="hero">
-  <div class="hero-text">
-    <h1>Where great hair begins.</h1>
-    <p>Expert cuts, rich colour and restorative care from stylists who genuinely listen. Book your chair in under a minute.</p>
-    <button class="btn-primary" onclick="Embedbot && Embedbot._openChat()">
-      Book an appointment
-    </button>
-  </div>
-  <div class="hero-visual">
-    <div class="hero-card">💇‍♀️</div>
-  </div>
-</section>
-
-<!-- ── Services ── -->
-<section class="services" id="services">
-  <div class="services-inner">
-    <div class="services-header">
+    <section class="section" id="services">
       <h2>Our services</h2>
-      <p>A full menu of salon services, tailored to you. Not sure what you need? Just ask our receptionist.</p>
-    </div>
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="service-icon">✂️</div>
-        <h3>Cuts &amp; Styling</h3>
-        <p>Precision cuts, blow-dries and finishing that keeps its shape long after you leave the chair.</p>
+      <p class="lede">A full menu of salon services, tailored to you. Not sure what you need? Just ask our receptionist.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="emoji">✂️</div>
+          <h3>Cuts & Styling</h3>
+          <p>Precision cuts, blow-dries and finishing that keeps its shape long after you leave.</p>
+          <div class="price">from £35</div>
+        </div>
+        <div class="card">
+          <div class="emoji">🎨</div>
+          <h3>Colour & Highlights</h3>
+          <p>Full colour, foils, balayage and gloss treatments using gentle, salon-grade products.</p>
+          <div class="price">from £70</div>
+        </div>
+        <div class="card">
+          <div class="emoji">💆</div>
+          <h3>Treatments</h3>
+          <p>Deep-conditioning, keratin smoothing and scalp care to bring your hair back to life.</p>
+          <div class="price">from £45</div>
+        </div>
       </div>
-      <div class="service-card">
-        <div class="service-icon">🎨</div>
-        <h3>Colour &amp; Highlights</h3>
-        <p>Full colour, foils, balayage and gloss treatments using gentle, salon-grade products that shine.</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">💆</div>
-        <h3>Treatments</h3>
-        <p>Deep-conditioning masks, keratin smoothing and scalp care to bring your hair back to life.</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">🌸</div>
-        <h3>Bridal &amp; Occasion</h3>
-        <p>Upstyles, blowouts and full bridal packages for your most important days.</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">🪒</div>
-        <h3>Men's Grooming</h3>
-        <p>Sharp cuts, beard trims and scalp treatments in a relaxed, no-fuss environment.</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">👧</div>
-        <h3>Junior Cuts</h3>
-        <p>Gentle, patient stylists for children — a calm experience from start to finish.</p>
-      </div>
-    </div>
+    </section>
+
+    <section class="cta" id="book">
+      <h2>Ready for your next look?</h2>
+      <p>Chat with our virtual receptionist and lock in a time that suits you.</p>
+      <button class="btn" onclick="EmbedBot && EmbedBot.open();">Start booking</button>
+    </section>
+
+    <section class="section" id="about">
+      <h2>Visit us</h2>
+      <p class="lede">Open Mon–Sat, 9am–6pm · 14 Rosewood Lane · Walk-ins welcome when we have space.</p>
+    </section>
   </div>
-</section>
 
-<!-- ── About ── -->
-<section class="about" id="about">
-  <div class="about-text">
-    <h2>Stylists who genuinely care.</h2>
-    <p>Since 2014 we've been a neighbourhood favourite, blending technical precision with a warm, unhurried approach. Every visit starts with a proper consultation — no guessing, no rushing.</p>
-    <p>Our team trains constantly, holds certifications from Wella and Kerastase, and genuinely loves the craft.</p>
-    <div class="about-stats">
-      <div class="stat-item">
-        <div class="stat-num">12+</div>
-        <div class="stat-label">Years open</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">8k+</div>
-        <div class="stat-label">Happy clients</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">4.9★</div>
-        <div class="stat-label">Google rating</div>
-      </div>
-    </div>
-  </div>
-  <div class="about-visual">🏆</div>
-</section>
+  <footer>© Bella Hair Studio · Demo website showcasing the embedbot widget</footer>
 
-<!-- ── Book CTA ── -->
-<section class="cta" id="book">
-  <h2>Ready for your best hair day?</h2>
-  <p>Book in seconds — our receptionist bot is always online.</p>
-  <button class="btn-white" onclick="Embedbot && Embedbot._openChat()">
-    💬 Chat to book
-  </button>
-</section>
-
-<!-- ── Footer ── -->
-<footer>
-  <span>© 2026 Bella Hair Studio. All rights reserved.</span>
-  <span>Chat powered by <a href="https://tigges.github.io/embedbot/" target="_blank">embedbot</a></span>
-</footer>
-
-<!-- ── Embedbot widget ── -->
-<script src="embedbot.js"></script>
-<script>
-  Embedbot.init({
-    botName: 'Bella Hair Studio',
-    botTitle: 'Receptionist',
-    status: 'online',
-    avatarEmoji: '👩‍🦱',
-    color: '#7c5cfc',
-    greeting: "Hi there! 👋 Welcome to <strong>Bella Hair Studio</strong>. I can help you book an appointment. What service would you like?",
-    quickReplies: ['Haircut', 'Cut & Blow-dry', 'Colour', 'Highlights', 'Balayage', 'Treatment'],
-    inputPlaceholder: 'Choose or type a service…',
-  });
-</script>
-
+  <!-- embedbot: the entire chatbot is added by this one script tag -->
+  <script
+    src="./dist/embedbot.js"
+    data-salon="Bella Hair Studio"
+    data-accent="#8b5cf6"
+    data-services="Haircut, Cut & Blow-dry, Colour, Highlights, Balayage, Treatment"
+    data-stylists="No preference, Ava, Marco, Priya"
+    data-hours="Mon–Sat, 9am–6pm"></script>
 </body>
 </html>
