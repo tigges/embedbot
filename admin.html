@@ -563,7 +563,30 @@
     config.address = document.getElementById('f-address').value.trim();
     config.accent  = document.getElementById('f-color-hex').value.trim() || '#8b5cf6';
     config.webhook = document.getElementById('f-webhook').value.trim();
-    // services/stylists are updated in real-time via onchange handlers
+
+    // Read services & prices directly from DOM so values typed without
+    // blurring the field (which would fire onchange) are not missed.
+    const serviceRows = document.querySelectorAll('#services-list .list-item');
+    config.services = [];
+    config.prices   = {};
+    serviceRows.forEach(row => {
+      const name  = (row.querySelector('input[data-field="service"]')  || {}).value || '';
+      const price = (row.querySelector('input[data-field="price"]')    || {}).value || '';
+      const n = name.trim();
+      if (n) {
+        config.services.push(n);
+        if (price.trim()) config.prices[n] = price.trim();
+      }
+    });
+
+    // Same for stylists
+    const stylistRows = document.querySelectorAll('#stylists-list .list-item');
+    config.stylists = [];
+    stylistRows.forEach(row => {
+      const name = (row.querySelector('input[type="text"]') || {}).value || '';
+      const n = name.trim();
+      if (n) config.stylists.push(n);
+    });
   }
 
   // ── Accent colour preview ─────────────────────────────────────────────────
