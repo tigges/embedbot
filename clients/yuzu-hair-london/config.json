@@ -1,0 +1,16 @@
+{
+  "salon": "Yuzu Hair London",
+  "accent": "#8b5cf6",
+  "hours": "",
+  "address": "",
+  "services": [
+    "Haircut",
+    "Colour",
+    "Treatment"
+  ],
+  "prices": {},
+  "stylists": [
+    "No preference"
+  ],
+  "webhook": ""
+}
