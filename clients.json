@@ -1,3 +1,10 @@
 [
-  { "id": "bella-hair", "name": "Bella Hair Studio" }
+  {
+    "id": "bella-hair",
+    "name": "Bella Hair Studio"
+  },
+  {
+    "id": "dj-urbant",
+    "name": "DJ UrbanT"
+  }
 ]
