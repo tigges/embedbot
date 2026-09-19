@@ -393,11 +393,14 @@
     <h2>🔗 Connect to GitHub</h2>
     <p>Enter your repository details and a Personal Access Token. This lets the admin panel save changes directly without manual commits.</p>
     <div class="steps">
-      <strong>To create a token:</strong><br>
-      1. Go to <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained</strong><br>
-      2. Select your <strong>embedbot repository</strong><br>
-      3. Under <em>Repository permissions</em>, set <strong>Contents → Read and write</strong><br>
-      4. Click <strong>Generate token</strong> and paste it below
+      <strong>Option A — Fine-grained token (recommended):</strong><br>
+      1. Go to <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong><br>
+      2. Click <strong>Generate new token</strong><br>
+      3. Under <em>Repository access</em>, choose <strong>Only select repositories</strong> → pick <strong>embedbot</strong><br>
+      4. Under <em>Repository permissions</em>, find <strong>Contents</strong> and set it to <strong>Read and write</strong><br>
+      5. Generate and paste the token below<br><br>
+      <strong>Option B — Classic token:</strong><br>
+      Go to <strong>Personal access tokens → Tokens (classic)</strong>, generate with the <strong>repo</strong> scope checked.
     </div>
     <div class="field">
       <label>Repository (owner/repo)</label>
@@ -560,7 +563,30 @@
     config.address = document.getElementById('f-address').value.trim();
     config.accent  = document.getElementById('f-color-hex').value.trim() || '#8b5cf6';
     config.webhook = document.getElementById('f-webhook').value.trim();
-    // services/stylists are updated in real-time via onchange handlers
+
+    // Read services & prices directly from DOM so values typed without
+    // blurring the field (which would fire onchange) are not missed.
+    const serviceRows = document.querySelectorAll('#services-list .list-item');
+    config.services = [];
+    config.prices   = {};
+    serviceRows.forEach(row => {
+      const name  = (row.querySelector('input[data-field="service"]')  || {}).value || '';
+      const price = (row.querySelector('input[data-field="price"]')    || {}).value || '';
+      const n = name.trim();
+      if (n) {
+        config.services.push(n);
+        if (price.trim()) config.prices[n] = price.trim();
+      }
+    });
+
+    // Same for stylists
+    const stylistRows = document.querySelectorAll('#stylists-list .list-item');
+    config.stylists = [];
+    stylistRows.forEach(row => {
+      const name = (row.querySelector('input[type="text"]') || {}).value || '';
+      const n = name.trim();
+      if (n) config.stylists.push(n);
+    });
   }
 
   // ── Accent colour preview ─────────────────────────────────────────────────
@@ -652,16 +678,17 @@
 
   async function pushToGitHub(token, repo, cfg) {
     const headers = {
-      'Authorization': 'token ' + token,
+      'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json',
     };
 
     const getUrl = `https://api.github.com/repos/${repo}/contents/config.json`;
     const getRes = await fetch(getUrl, { headers });
-    if (!getRes.ok && getRes.status !== 404) {
-      throw new Error('GitHub API error ' + getRes.status + '. Check your token and repo.');
-    }
+
+    if (getRes.status === 401) throw new Error('Token rejected by GitHub — it may have expired. Reconnect with a fresh token.');
+    if (getRes.status === 403) throw new Error('Token lacks write permission. Open GitHub Connect, disconnect, then recreate your token with Contents → Read and write on this repo.');
+    if (!getRes.ok && getRes.status !== 404) throw new Error('GitHub API error ' + getRes.status + '. Check your token and repo name.');
 
     let sha;
     if (getRes.ok) {
@@ -675,8 +702,10 @@
 
     const putRes = await fetch(getUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
     if (!putRes.ok) {
+      if (putRes.status === 403) throw new Error('Write permission denied. Your token needs Contents → Read and write. Disconnect and recreate the token.');
+      if (putRes.status === 401) throw new Error('Token expired or invalid. Disconnect and reconnect with a new token.');
       const err = await putRes.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to save. Check token permissions (needs Contents: Write).');
+      throw new Error(err.message || 'Save failed (HTTP ' + putRes.status + ').');
     }
   }
 
@@ -718,12 +747,25 @@
       return;
     }
 
-    // Verify token works
+    // Verify token has Contents access on this specific repo
     try {
-      const res = await fetch(`https://api.github.com/repos/${repo}`, {
-        headers: { 'Authorization': 'token ' + token }
-      });
-      if (!res.ok) throw new Error('Could not access repo. Check repo name and token permissions.');
+      const authHeader = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github.v3+json' };
+
+      // First check the repo exists
+      const repoRes = await fetch(`https://api.github.com/repos/${repo}`, { headers: authHeader });
+      if (repoRes.status === 404) throw new Error(`Repo '${repo}' not found. Check the owner/repo format (e.g. tigges/embedbot).`);
+      if (repoRes.status === 401) throw new Error('Token is invalid or expired — copy it again from GitHub.');
+
+      // Then check the token can read repo contents (proves Contents permission is granted for this repo)
+      const contentsRes = await fetch(`https://api.github.com/repos/${repo}/contents/config.json`, { headers: authHeader });
+      if (contentsRes.status === 403) {
+        throw new Error(
+          'Token cannot access this repo\'s contents. ' +
+          'Make sure you selected the "' + repo + '" repository when creating the token, and set Contents → Read and write.'
+        );
+      }
+      if (contentsRes.status === 401) throw new Error('Token is invalid or expired — copy it again from GitHub.');
+      // 404 is fine: repo exists but config.json hasn't been committed yet
     } catch (e) {
       toast('❌ ' + e.message, 'error');
       return;

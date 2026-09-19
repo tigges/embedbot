@@ -117,5 +117,65 @@
 
   <!-- embedbot: settings are loaded from config.json — edit via admin.html -->
   <script src="./dist/embedbot.js" data-config="./config.json"></script>
+
+  <script>
+    const SERVICE_ICONS = ['✂️','🎨','💆','🌸','🪒','👧','💅','🧴'];
+
+    async function applyConfig() {
+      let cfg;
+      try {
+        const res = await fetch('./config.json');
+        if (!res.ok) return;
+        cfg = await res.json();
+      } catch (_) { return; }
+
+      // Page title
+      if (cfg.salon) document.title = cfg.salon + ' — Modern Cuts, Colour & Care';
+
+      // Nav logo — split on first space to keep the dot style
+      const logo = document.querySelector('.logo');
+      if (logo && cfg.salon) {
+        const idx = cfg.salon.indexOf(' ');
+        logo.innerHTML = idx > -1
+          ? cfg.salon.slice(0, idx) + '<span>.</span>' + cfg.salon.slice(idx + 1)
+          : cfg.salon;
+      }
+
+      // Footer
+      const footer = document.querySelector('footer');
+      if (footer && cfg.salon) footer.textContent = '© ' + cfg.salon + ' · Demo website showcasing the embedbot widget';
+
+      // Visit us / about
+      const aboutLede = document.querySelector('#about .lede');
+      if (aboutLede) {
+        const parts = [cfg.hours, cfg.address, 'Walk-ins welcome when we have space.'].filter(Boolean);
+        aboutLede.textContent = parts.join(' · ');
+      }
+
+      // Services cards — rebuild from config so names and prices stay in sync
+      const cards = document.querySelector('.cards');
+      if (cards && cfg.services && cfg.services.length) {
+        cards.innerHTML = cfg.services.map((svc, i) => {
+          const price = cfg.prices && cfg.prices[svc] ? `<div class="price">${esc(cfg.prices[svc])}</div>` : '';
+          return `<div class="card">
+            <div class="emoji">${SERVICE_ICONS[i % SERVICE_ICONS.length]}</div>
+            <h3>${esc(svc)}</h3>
+            <p>${esc(svc)} at ${esc(cfg.salon || 'our salon')} — book in seconds via our receptionist.</p>
+            ${price}
+          </div>`;
+        }).join('');
+      }
+
+      // Accent colour on root CSS variable so buttons/links update too
+      if (cfg.accent) document.documentElement.style.setProperty('--accent', cfg.accent);
+    }
+
+    function esc(str) {
+      return String(str || '').replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    applyConfig();
+  </script>
 </body>
 </html>
