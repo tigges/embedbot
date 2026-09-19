@@ -1,0 +1,15 @@
+{
+  "name": "embedbot",
+  "install": "npm install",
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "npm run dev"
+    }
+  ],
+  "ports": [
+    {
+      "port": 8000
+    }
+  ]
+}
