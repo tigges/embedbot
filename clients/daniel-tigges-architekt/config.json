@@ -1,14 +1,16 @@
 {
   "salon": "Daniel Tigges Architekt",
   "accent": "#8b5cf6",
-  "hours": "",
-  "address": "",
+  "hours": "Mon-Fri 8am to 6pm",
+  "address": "Barcelona",
   "services": [
-    "Haircut",
-    "Colour",
-    "Treatment"
+    "Plan Assessment",
+    "Planning Permmission"
   ],
-  "prices": {},
+  "prices": {
+    "Plan Assessment": "from EUR 2000",
+    "Planning Permmission": "from EUR 5000"
+  },
   "stylists": [
     "No preference"
   ],
