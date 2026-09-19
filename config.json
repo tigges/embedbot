@@ -1,10 +1,17 @@
 {
-  "salon": "Bella Hair Studio",
+  "salon": "Bella Hair Studio TEST",
   "accent": "#8b5cf6",
   "hours": "Mon–Sat, 9am–6pm",
   "address": "14 Rosewood Lane",
   "webhook": "",
-  "services": ["Haircut", "Cut & Blow-dry", "Colour", "Highlights", "Balayage", "Treatment"],
+  "services": [
+    "Haircut",
+    "Cut & Blow-dry",
+    "Colour",
+    "Highlights",
+    "Balayage",
+    "Treatment"
+  ],
   "prices": {
     "Haircut": "from £35",
     "Cut & Blow-dry": "from £45",
@@ -13,5 +20,10 @@
     "Balayage": "from £90",
     "Treatment": "from £45"
   },
-  "stylists": ["No preference", "Ava", "Marco", "Priya"]
+  "stylists": [
+    "No preference",
+    "Ava",
+    "Marco",
+    "Priya"
+  ]
 }
