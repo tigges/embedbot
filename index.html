@@ -115,13 +115,7 @@
 
   <footer>© Bella Hair Studio · Demo website showcasing the embedbot widget</footer>
 
-  <!-- embedbot: the entire chatbot is added by this one script tag -->
-  <script
-    src="./dist/embedbot.js"
-    data-salon="Bella Hair Studio"
-    data-accent="#8b5cf6"
-    data-services="Haircut, Cut & Blow-dry, Colour, Highlights, Balayage, Treatment"
-    data-stylists="No preference, Ava, Marco, Priya"
-    data-hours="Mon–Sat, 9am–6pm"></script>
+  <!-- embedbot: settings are loaded from config.json — edit via admin.html -->
+  <script src="./dist/embedbot.js" data-config="./config.json"></script>
 </body>
 </html>
