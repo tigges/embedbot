@@ -3,489 +3,353 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Embedbot — Instant Embed Code Generator</title>
-  <meta name="description" content="Paste any YouTube, Spotify, Vimeo, SoundCloud, or Twitter URL and instantly get the embed code." />
+  <title>Bella Hair Studio — Where great hair begins</title>
+  <meta name="description" content="Expert cuts, rich colour and restorative care from stylists who genuinely listen. Book your chair in under a minute." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2e3350;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
-      --text: #e8eaf0;
-      --muted: #7a7f9a;
-      --success: #34d399;
-      --error: #f87171;
-      --radius: 12px;
+      --purple: #7c5cfc;
+      --purple-light: #a78bfa;
+      --purple-dark: #5b3fd4;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --bg: #fafafa;
+      --white: #ffffff;
+      --border: #e5e7eb;
     }
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      line-height: 1.6;
     }
 
-    /* ── Header ── */
-    header {
-      padding: 24px 32px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      background: var(--white);
       border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
     }
 
-    .logo {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    .nav-logo {
+      font-size: 1rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .nav-logo span { color: var(--purple); }
+
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a {
+      font-size: 0.9rem; font-weight: 500; color: var(--muted);
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-book {
+      background: var(--purple);
+      color: #fff !important;
+      padding: 9px 20px;
       border-radius: 8px;
-      display: grid; place-items: center;
-      font-size: 18px;
+      font-weight: 600 !important;
+      font-size: 0.875rem !important;
+      transition: background .15s !important;
+    }
+    .nav-book:hover { background: var(--purple-dark) !important; color: #fff !important; }
+
+    /* ── Hero ── */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 48px;
+      padding: 80px 48px 100px;
+      max-width: 1100px; margin: 0 auto;
     }
 
-    header h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
-    header span { font-size: 0.75rem; color: var(--muted); background: var(--surface2); padding: 2px 8px; border-radius: 999px; }
-
-    /* ── Main ── */
-    main {
-      flex: 1;
-      max-width: 780px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
-    }
-
-    .hero { text-align: center; margin-bottom: 48px; }
-    .hero h2 {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
+    .hero-text h1 {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
       font-weight: 800;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 30%, var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 12px;
+      line-height: 1.15;
+      margin-bottom: 20px;
     }
-    .hero p { color: var(--muted); font-size: 1rem; line-height: 1.6; }
 
-    /* ── Input ── */
-    .input-wrap {
-      display: flex;
-      gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 8px 8px 16px;
-      transition: border-color 0.2s;
+    .hero-text p {
+      color: var(--muted); font-size: 1rem; line-height: 1.7;
+      max-width: 380px; margin-bottom: 32px;
     }
-    .input-wrap:focus-within { border-color: var(--accent); }
 
-    #url-input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 0.95rem;
-      font-family: inherit;
-      min-width: 0;
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--purple); color: #fff;
+      padding: 14px 28px; border-radius: 10px;
+      font-weight: 700; font-size: 0.95rem;
+      border: none; cursor: pointer;
+      transition: background .15s, transform .1s;
     }
-    #url-input::placeholder { color: var(--muted); }
+    .btn-primary:hover { background: var(--purple-dark); }
+    .btn-primary:active { transform: scale(0.98); }
 
-    #generate-btn {
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 22px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.15s, transform 0.1s;
+    /* Hero illustration card */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
     }
-    #generate-btn:hover { opacity: 0.9; }
-    #generate-btn:active { transform: scale(0.97); }
 
-    /* ── Supported chips ── */
-    .supported {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .chip {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 999px; padding: 5px 12px;
-      font-size: 0.78rem; color: var(--muted);
-    }
-    .chip img { width: 14px; height: 14px; object-fit: contain; }
-
-    /* ── Result ── */
-    #result { margin-top: 40px; display: none; flex-direction: column; gap: 24px; }
-
-    .result-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+    .hero-card {
+      width: 340px; height: 280px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6c63ff 50%, #a78bfa 100%);
+      border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 100px;
+      box-shadow: 0 24px 60px rgba(124, 92, 252, .35);
+      position: relative;
       overflow: hidden;
     }
 
-    .card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.82rem; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.05em;
+    .hero-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(255,255,255,.15) 0%, transparent 60%);
     }
 
-    .copy-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 5px 12px;
-      font-size: 0.8rem; font-weight: 500; color: var(--text);
-      cursor: pointer; transition: background 0.15s;
-    }
-    .copy-btn:hover { background: var(--border); }
-    .copy-btn.copied { color: var(--success); border-color: var(--success); }
-
-    .preview-wrap {
-      padding: 20px;
-      display: flex; justify-content: center;
-      background: #0a0c12;
-    }
-    .preview-wrap iframe {
-      border: none;
-      border-radius: 8px;
-      max-width: 100%;
+    /* ── Services ── */
+    .services {
+      background: var(--white);
+      padding: 80px 48px;
     }
 
-    pre {
-      padding: 18px;
-      font-size: 0.82rem;
-      line-height: 1.6;
-      overflow-x: auto;
-      color: #c4c9e0;
-      font-family: 'Fira Code', 'Cascadia Code', monospace;
-      white-space: pre-wrap;
-      word-break: break-all;
+    .services-inner { max-width: 1100px; margin: 0 auto; }
+
+    .services-header {
+      text-align: center; margin-bottom: 52px;
+    }
+    .services-header h2 {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .services-header p {
+      color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto;
     }
 
-    /* ── Error ── */
-    #error-msg {
-      display: none;
-      align-items: center; gap: 10px;
-      background: rgba(248, 113, 113, 0.08);
-      border: 1px solid rgba(248, 113, 113, 0.25);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      color: var(--error);
-      font-size: 0.9rem;
-      margin-top: 20px;
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
     }
 
-    /* ── Examples ── */
-    .examples { margin-top: 40px; }
-    .examples h3 { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-    .examples-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .example-pill {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 14px;
-      font-size: 0.82rem; color: var(--accent2);
-      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    .service-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: box-shadow .2s, transform .2s;
     }
-    .example-pill:hover { background: var(--surface2); border-color: var(--accent); }
+    .service-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,.08);
+      transform: translateY(-2px);
+    }
+
+    .service-icon { font-size: 32px; margin-bottom: 16px; }
+    .service-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .service-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.65; }
+
+    /* ── About strip ── */
+    .about {
+      padding: 80px 48px;
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center;
+    }
+
+    .about-text h2 {
+      font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .about-text p {
+      color: var(--muted); font-size: 0.95rem; line-height: 1.75; margin-bottom: 24px;
+    }
+
+    .about-stats {
+      display: flex; gap: 32px;
+    }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--purple); }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    .about-visual {
+      background: linear-gradient(160deg, #f3f0ff 0%, #ede9fe 100%);
+      border-radius: 24px;
+      height: 300px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px;
+    }
+
+    /* ── Book CTA ── */
+    .cta {
+      background: linear-gradient(135deg, var(--purple) 0%, #5b3fd4 100%);
+      padding: 80px 48px;
+      text-align: center; color: #fff;
+    }
+    .cta h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .cta p { font-size: 1rem; opacity: .8; margin-bottom: 32px; }
+    .btn-white {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; color: var(--purple);
+      padding: 14px 32px; border-radius: 10px;
+      font-weight: 700; font-size: 0.95rem;
+      transition: opacity .15s;
+    }
+    .btn-white:hover { opacity: .92; }
 
     /* ── Footer ── */
     footer {
-      text-align: center;
-      padding: 24px;
-      font-size: 0.8rem;
-      color: var(--muted);
+      padding: 28px 48px;
       border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.82rem; color: var(--muted);
     }
-    footer a { color: var(--accent2); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 18px; }
+      .hero { grid-template-columns: 1fr; padding: 48px 20px 60px; gap: 32px; }
+      .hero-visual { order: -1; }
+      .hero-card { width: 240px; height: 200px; font-size: 70px; }
+      .services { padding: 48px 20px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .about { grid-template-columns: 1fr; padding: 48px 20px; gap: 32px; }
+      .cta { padding: 60px 20px; }
+      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">🤖</div>
-  <h1>Embedbot</h1>
-  <span>v1.0</span>
-</header>
-
-<main>
-  <div class="hero">
-    <h2>Paste a link.<br/>Get the embed.</h2>
-    <p>Generate iframe embed code for YouTube, Spotify, Vimeo,<br />SoundCloud, Loom, and more — instantly.</p>
+<!-- ── Nav ── -->
+<nav>
+  <div class="nav-logo">Bella<span>.</span>Hair Studio</div>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#about">About</a>
+    <a href="#book" class="nav-book">Book</a>
   </div>
+</nav>
 
-  <div class="input-wrap">
-    <input id="url-input" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" spellcheck="false" />
-    <button id="generate-btn">Generate ↗</button>
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Where great hair begins.</h1>
+    <p>Expert cuts, rich colour and restorative care from stylists who genuinely listen. Book your chair in under a minute.</p>
+    <button class="btn-primary" onclick="Embedbot && Embedbot._openChat()">
+      Book an appointment
+    </button>
   </div>
-
-  <div class="supported">
-    <div class="chip">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#f00"><path d="M21.8 8s-.2-1.4-.8-2c-.8-.8-1.6-.8-2-.9C16.2 5 12 5 12 5s-4.2 0-7 .1c-.4.1-1.2.1-2 .9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.2.8C6.6 19 12 19 12 19s4.2 0 7-.2c.4-.1 1.2-.1 2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8zM10 15V9l5.5 3-5.5 3z"/></svg>
-      YouTube
-    </div>
-    <div class="chip">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#1db954"><circle cx="12" cy="12" r="12"/><path fill="#000" d="M17.9 10.9C14.7 9 9.4 8.8 6.3 9.7c-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.5-1.1 9.4-.9 13.1 1.3.5.2.6.8.4 1.3-.3.4-.9.6-1.5.4zm-.1 2.8c-.2.4-.7.5-1.1.3-2.6-1.6-6.6-2.1-9.7-1.1-.4.1-.8-.1-1-.5-.1-.4.1-.8.5-1 3.5-1.1 7.9-.5 10.9 1.3.4.2.5.7.4 1zm-1.3 2.7c-.2.3-.5.4-.8.2-2.3-1.4-5.1-1.7-8.5-.9-.3.1-.6-.1-.7-.4-.1-.3.1-.6.4-.7 3.7-.8 6.8-.5 9.3 1 .3.1.4.5.3.8z"/></svg>
-      Spotify
-    </div>
-    <div class="chip">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#1ab7ea"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.1c-.2.3-.6.4-.9.2-2.5-1.5-5.6-1.9-9.3-1-.4.1-.7-.1-.8-.5-.1-.4.1-.7.5-.8 4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.5-3.3c-.3.4-.8.5-1.2.2-2.8-1.7-7.1-2.2-10.5-1.2-.4.1-.9-.1-1-.5-.1-.4.1-.9.5-1 3.8-1.2 8.5-.6 11.8 1.4.3.2.5.7.4 1.1zm.1-3.4c-3.4-2-9-2.2-12.2-1.2-.5.2-1-.1-1.2-.6-.2-.5.1-1 .6-1.2 3.8-1.1 10-.9 13.9 1.4.5.3.6.9.4 1.3-.3.5-.9.6-1.5.3z"/></svg>
-      Spotify (podcast)
-    </div>
-    <div class="chip">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#1ab2f5"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm4.6 8.2l-1.5 7.3c-.1.5-.5.7-.9.5l-2.6-1.9-1.3 1.2c-.1.1-.3.2-.6.2l.2-2.7 5.1-4.6c.2-.2 0-.3-.3-.1l-6.3 3.9-2.7-.8c-.6-.2-.6-.6.1-.8l10.6-4c.5-.2 1 .1.8.8h.4z"/></svg>
-      Vimeo
-    </div>
-    <div class="chip">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="#f50"><path d="M11.56 8.87V17l4.75-4.13-4.75-4zM0 0h24v24H0z" fill="none"/><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.59 12.87l-7.37 6.43c-.5.44-1.22.44-1.72 0l-7.37-6.43c-.5-.44-.5-1.3 0-1.74l7.37-6.43c.5-.44 1.22-.44 1.72 0l7.37 6.43c.5.44.5 1.3 0 1.74z"/></svg>
-      SoundCloud
-    </div>
-    <div class="chip">🎬 Loom</div>
-    <div class="chip">🐦 Twitter/X</div>
-    <div class="chip">📺 Twitch</div>
+  <div class="hero-visual">
+    <div class="hero-card">💇‍♀️</div>
   </div>
+</section>
 
-  <div id="error-msg">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-    <span id="error-text">Couldn't recognize that URL. Try a YouTube, Spotify, Vimeo, SoundCloud, Loom, or Twitch link.</span>
-  </div>
-
-  <div id="result">
-    <div class="result-card">
-      <div class="card-header">
-        <span>Preview</span>
-        <span id="platform-badge"></span>
+<!-- ── Services ── -->
+<section class="services" id="services">
+  <div class="services-inner">
+    <div class="services-header">
+      <h2>Our services</h2>
+      <p>A full menu of salon services, tailored to you. Not sure what you need? Just ask our receptionist.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">✂️</div>
+        <h3>Cuts &amp; Styling</h3>
+        <p>Precision cuts, blow-dries and finishing that keeps its shape long after you leave the chair.</p>
       </div>
-      <div class="preview-wrap" id="preview-area"></div>
-    </div>
-
-    <div class="result-card">
-      <div class="card-header">
-        <span>Embed Code</span>
-        <button class="copy-btn" id="copy-btn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy
-        </button>
+      <div class="service-card">
+        <div class="service-icon">🎨</div>
+        <h3>Colour &amp; Highlights</h3>
+        <p>Full colour, foils, balayage and gloss treatments using gentle, salon-grade products that shine.</p>
       </div>
-      <pre id="code-output"></pre>
+      <div class="service-card">
+        <div class="service-icon">💆</div>
+        <h3>Treatments</h3>
+        <p>Deep-conditioning masks, keratin smoothing and scalp care to bring your hair back to life.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🌸</div>
+        <h3>Bridal &amp; Occasion</h3>
+        <p>Upstyles, blowouts and full bridal packages for your most important days.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🪒</div>
+        <h3>Men's Grooming</h3>
+        <p>Sharp cuts, beard trims and scalp treatments in a relaxed, no-fuss environment.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">👧</div>
+        <h3>Junior Cuts</h3>
+        <p>Gentle, patient stylists for children — a calm experience from start to finish.</p>
+      </div>
     </div>
   </div>
+</section>
 
-  <div class="examples">
-    <h3>Try an example</h3>
-    <div class="examples-grid">
-      <div class="example-pill" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">YouTube — Rickroll</div>
-      <div class="example-pill" data-url="https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT">Spotify — Never Gonna Give You Up</div>
-      <div class="example-pill" data-url="https://vimeo.com/148751763">Vimeo — Demo</div>
-      <div class="example-pill" data-url="https://soundcloud.com/forss/flickermood">SoundCloud — Flickermood</div>
-      <div class="example-pill" data-url="https://www.twitch.tv/videos/2100000000">Twitch VOD</div>
+<!-- ── About ── -->
+<section class="about" id="about">
+  <div class="about-text">
+    <h2>Stylists who genuinely care.</h2>
+    <p>Since 2014 we've been a neighbourhood favourite, blending technical precision with a warm, unhurried approach. Every visit starts with a proper consultation — no guessing, no rushing.</p>
+    <p>Our team trains constantly, holds certifications from Wella and Kerastase, and genuinely loves the craft.</p>
+    <div class="about-stats">
+      <div class="stat-item">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Years open</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">8k+</div>
+        <div class="stat-label">Happy clients</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4.9★</div>
+        <div class="stat-label">Google rating</div>
+      </div>
     </div>
   </div>
-</main>
+  <div class="about-visual">🏆</div>
+</section>
 
+<!-- ── Book CTA ── -->
+<section class="cta" id="book">
+  <h2>Ready for your best hair day?</h2>
+  <p>Book in seconds — our receptionist bot is always online.</p>
+  <button class="btn-white" onclick="Embedbot && Embedbot._openChat()">
+    💬 Chat to book
+  </button>
+</section>
+
+<!-- ── Footer ── -->
 <footer>
-  Built with ♥ — <a href="https://github.com/tigges/embedbot" target="_blank">GitHub</a>
+  <span>© 2026 Bella Hair Studio. All rights reserved.</span>
+  <span>Chat powered by <a href="https://tigges.github.io/embedbot/" target="_blank">embedbot</a></span>
 </footer>
 
+<!-- ── Embedbot widget ── -->
+<script src="embedbot.js"></script>
 <script>
-  const input = document.getElementById('url-input');
-  const btn = document.getElementById('generate-btn');
-  const resultEl = document.getElementById('result');
-  const previewArea = document.getElementById('preview-area');
-  const codeOutput = document.getElementById('code-output');
-  const copyBtn = document.getElementById('copy-btn');
-  const errorMsg = document.getElementById('error-msg');
-  const errorText = document.getElementById('error-text');
-  const platformBadge = document.getElementById('platform-badge');
-
-  // ── Platform detectors ──────────────────────────────────────────────────────
-
-  const platforms = [
-    {
-      name: 'YouTube',
-      detect: url => {
-        const m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-        return m ? { id: m[1] } : null;
-      },
-      embed: ({ id }, url) => {
-        const startMatch = url.match(/[?&]t=(\d+)/);
-        const start = startMatch ? `&start=${startMatch[1]}` : '';
-        const src = `https://www.youtube.com/embed/${id}?rel=0${start}`;
-        return { src, w: 560, h: 315 };
-      }
-    },
-    {
-      name: 'Spotify',
-      detect: url => {
-        const m = url.match(/open\.spotify\.com\/(track|album|playlist|episode|show|artist)\/([A-Za-z0-9]+)/);
-        return m ? { type: m[1], id: m[2] } : null;
-      },
-      embed: ({ type, id }) => {
-        const compact = ['track', 'episode'].includes(type);
-        const src = `https://open.spotify.com/embed/${type}/${id}`;
-        return { src, w: 560, h: compact ? 152 : 380 };
-      }
-    },
-    {
-      name: 'Vimeo',
-      detect: url => {
-        const m = url.match(/vimeo\.com\/(\d+)/);
-        return m ? { id: m[1] } : null;
-      },
-      embed: ({ id }) => ({
-        src: `https://player.vimeo.com/video/${id}?color=6c63ff&title=0&byline=0`,
-        w: 560, h: 315
-      })
-    },
-    {
-      name: 'SoundCloud',
-      detect: url => url.includes('soundcloud.com') ? { url } : null,
-      embed: ({ url }) => ({
-        src: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%236c63ff&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`,
-        w: 560, h: 166
-      })
-    },
-    {
-      name: 'Loom',
-      detect: url => {
-        const m = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
-        return m ? { id: m[1] } : null;
-      },
-      embed: ({ id }) => ({
-        src: `https://www.loom.com/embed/${id}`,
-        w: 560, h: 315
-      })
-    },
-    {
-      name: 'Twitch',
-      detect: url => {
-        const channel = url.match(/twitch\.tv\/([A-Za-z0-9_]+)(?!\S)/);
-        const vod = url.match(/twitch\.tv\/videos\/(\d+)/);
-        const clip = url.match(/twitch\.tv\/\S+\/clip\/([A-Za-z0-9_-]+)/);
-        if (vod) return { type: 'video', id: vod[1] };
-        if (clip) return { type: 'clip', id: clip[1] };
-        if (channel && channel[1] !== 'videos') return { type: 'channel', id: channel[1] };
-        return null;
-      },
-      embed: ({ type, id }) => {
-        const parent = encodeURIComponent(window.location.hostname || 'localhost');
-        let src;
-        if (type === 'video') src = `https://player.twitch.tv/?video=${id}&parent=${parent}&autoplay=false`;
-        else if (type === 'clip') src = `https://clips.twitch.tv/embed?clip=${id}&parent=${parent}`;
-        else src = `https://player.twitch.tv/?channel=${id}&parent=${parent}&autoplay=false`;
-        return { src, w: 560, h: 315 };
-      }
-    },
-    {
-      name: 'Twitter / X',
-      detect: url => {
-        const m = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
-        return m ? { id: m[1] } : null;
-      },
-      embed: ({ id }) => ({
-        src: `https://platform.twitter.com/embed/Tweet.html?id=${id}`,
-        w: 550, h: 300
-      })
-    },
-  ];
-
-  // ── Core logic ──────────────────────────────────────────────────────────────
-
-  function buildIframe({ src, w, h }, allowFull = true) {
-    const allow = allowFull
-      ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-      : '';
-    const allowfullscreen = allowFull ? 'allowfullscreen' : '';
-    return `<iframe\n  width="${w}"\n  height="${h}"\n  src="${src}"\n  frameborder="0"\n  allow="${allow}"\n  ${allowfullscreen}>\n</iframe>`;
-  }
-
-  function generate(rawUrl) {
-    rawUrl = rawUrl.trim();
-    if (!rawUrl) return;
-
-    // normalise
-    if (!/^https?:\/\//i.test(rawUrl)) rawUrl = 'https://' + rawUrl;
-
-    let matched = null;
-    let matchedPlatform = null;
-
-    for (const p of platforms) {
-      const data = p.detect(rawUrl);
-      if (data) {
-        matched = p.embed(data, rawUrl);
-        matchedPlatform = p.name;
-        break;
-      }
-    }
-
-    errorMsg.style.display = 'none';
-    resultEl.style.display = 'none';
-
-    if (!matched) {
-      errorMsg.style.display = 'flex';
-      return;
-    }
-
-    const code = buildIframe(matched);
-    codeOutput.textContent = code;
-    platformBadge.textContent = matchedPlatform;
-
-    // render preview
-    previewArea.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.src = matched.src;
-    iframe.width = Math.min(matched.w, window.innerWidth - 80);
-    iframe.height = matched.h;
-    iframe.frameBorder = '0';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.allowFullscreen = true;
-    iframe.style.borderRadius = '8px';
-    previewArea.appendChild(iframe);
-
-    resultEl.style.display = 'flex';
-    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // ── Events ──────────────────────────────────────────────────────────────────
-
-  btn.addEventListener('click', () => generate(input.value));
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') generate(input.value); });
-
-  // paste-and-go
-  input.addEventListener('paste', e => {
-    setTimeout(() => generate(input.value), 50);
-  });
-
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(codeOutput.textContent).then(() => {
-      copyBtn.classList.add('copied');
-      copyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
-      setTimeout(() => {
-        copyBtn.classList.remove('copied');
-        copyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
-      }, 2000);
-    });
-  });
-
-  document.querySelectorAll('.example-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const url = pill.dataset.url;
-      input.value = url;
-      generate(url);
-    });
+  Embedbot.init({
+    botName: 'Bella Hair Studio',
+    botTitle: 'Receptionist',
+    status: 'online',
+    avatarEmoji: '👩‍🦱',
+    color: '#7c5cfc',
+    greeting: "Hi there! 👋 Welcome to <strong>Bella Hair Studio</strong>. I can help you book an appointment. What service would you like?",
+    quickReplies: ['Haircut', 'Cut & Blow-dry', 'Colour', 'Highlights', 'Balayage', 'Treatment'],
+    inputPlaceholder: 'Choose or type a service…',
   });
 </script>
+
 </body>
 </html>
