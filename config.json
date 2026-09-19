@@ -10,7 +10,9 @@
     "Colour",
     "Highlights",
     "Balayage",
-    "Treatment"
+    "Treatment",
+    "Skin Scrub",
+    "New Service"
   ],
   "prices": {
     "Haircut": "from £35",
@@ -18,7 +20,8 @@
     "Colour": "from £70",
     "Highlights": "from £75",
     "Balayage": "from £90",
-    "Treatment": "from £45"
+    "Treatment": "from £45",
+    "Skin Scrub": "from £200"
   },
   "stylists": [
     "No preference",
